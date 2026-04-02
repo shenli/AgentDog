@@ -17,7 +17,7 @@ export function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabId>("cost")
   const ws = useWebSocket()
-  const { config } = useConfig()
+  const { config, refreshConfig } = useConfig()
 
   // Refresh sessions on WebSocket events
   useEffect(() => {
@@ -29,8 +29,8 @@ export function App() {
 
   const selected = sessions.find((s) => s.id === selectedId) ?? null
 
-  // Per-session: auto-detect token-first (Max) vs cost-first based on agent type
-  const isMax = selected ? isSessionMaxPlan(selected) : true
+  // Per-session: auto-detect token-first vs cost-first, respecting config overrides
+  const isMax = selected ? isSessionMaxPlan(selected, config) : true
 
   // Determine which tabs are available for the selected agent
   const agentFeatures = selected
@@ -125,6 +125,8 @@ export function App() {
                 sessions={sessions}
                 onSelectSession={setSelectedId}
                 isMax={isMax}
+                config={config}
+                onConfigChange={refreshConfig}
               />
             </div>
           ) : (

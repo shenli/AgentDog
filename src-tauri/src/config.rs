@@ -1,14 +1,33 @@
 use crate::agent::AgentType;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::PathBuf;
+
+/// Billing mode for an agent — determines how cost is displayed and whether cost warnings fire.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum BillingMode {
+    /// Flat subscription (e.g., Claude Max/Pro) — cost is API-equivalent only, no cost warnings
+    Subscription,
+    /// Pay-per-token API (e.g., Claude API, Codex) — cost is real spend, warnings enabled
+    Api,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
-    /// "max" | "pro" | "api"
+    /// Deprecated — kept for backward compat, replaced by billing_mode
+    #[serde(default = "default_plan")]
     pub plan: String,
     /// Which agent backends are enabled
     #[serde(default = "default_enabled_agents")]
     pub enabled_agents: Vec<AgentType>,
+    /// Per-agent billing mode override. Agents not listed use the default for their type.
+    #[serde(default)]
+    pub billing: HashMap<String, BillingMode>,
+}
+
+fn default_plan() -> String {
+    "max".to_string()
 }
 
 fn default_enabled_agents() -> Vec<AgentType> {
@@ -18,8 +37,24 @@ fn default_enabled_agents() -> Vec<AgentType> {
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
-            plan: "max".to_string(),
+            plan: default_plan(),
             enabled_agents: default_enabled_agents(),
+            billing: HashMap::new(),
+        }
+    }
+}
+
+impl AppConfig {
+    /// Get the billing mode for an agent type.
+    /// Uses explicit config if set, otherwise falls back to sensible defaults.
+    pub fn billing_mode(&self, agent_type: &str) -> BillingMode {
+        if let Some(mode) = self.billing.get(agent_type) {
+            return mode.clone();
+        }
+        // Defaults: Claude Code = subscription (Max/Pro), others = API
+        match agent_type {
+            "claude_code" => BillingMode::Subscription,
+            _ => BillingMode::Api,
         }
     }
 }

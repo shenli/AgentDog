@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react"
-import type { Session, ProviderStatus } from "../lib/api"
+import type { Session, ProviderStatus, AppConfig } from "../lib/api"
 import { api } from "../lib/api"
 import type { Warning } from "../lib/warnings"
 import { computeOverviewWarnings } from "../lib/warnings"
 
 interface Props {
   sessions: Session[]
+  config?: AppConfig
   onSelectSession?: (id: string) => void
 }
 
@@ -38,7 +39,7 @@ const STATUS_LABEL: Record<string, string> = {
   under_maintenance: "Maintenance",
 }
 
-export function WarningsBanner({ sessions, onSelectSession }: Props) {
+export function WarningsBanner({ sessions, config, onSelectSession }: Props) {
   const [providers, setProviders] = useState<ProviderStatus[]>([])
   const [collapsed, setCollapsed] = useState(false)
 
@@ -49,7 +50,7 @@ export function WarningsBanner({ sessions, onSelectSession }: Props) {
     return () => clearInterval(interval)
   }, [])
 
-  const warnings = computeOverviewWarnings(sessions)
+  const warnings = computeOverviewWarnings(sessions, config)
   const issues = providers.filter((p) => p.status !== "operational")
   const hasWarnings = warnings.length > 0
 

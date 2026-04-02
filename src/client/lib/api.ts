@@ -99,8 +99,11 @@ export interface MemoryEventRow {
   age_days: number | null
 }
 
+export type BillingMode = "subscription" | "api"
+
 export interface AppConfig {
-  plan: string // "max" | "pro" | "api"
+  plan: string
+  billing: Record<string, BillingMode>
 }
 
 export const AGENT_FEATURES: Record<AgentType, Set<string>> = {
@@ -115,27 +118,25 @@ export const AGENT_LABELS: Record<AgentType, string> = {
   openclaw: "OpenClaw",
 }
 
-/** Whether a session should show token-first (Max plan) or cost-first views.
- *  Claude Code defaults to Max (most power users). Codex/OpenClaw always cost.
- *  Claude Code API users will still see cost as secondary info. */
-export function isSessionMaxPlan(session: Session): boolean {
-  // Claude Code: default to token-first (Max is the common plan)
-  // API users still see cost as secondary metric in TopBar
-  if (session.agent_type === "claude_code") return true
-  // Others: always cost-first (they're API-billed)
-  return false
+/** Get the billing mode for a session, checking config overrides then defaults. */
+export function getSessionBilling(session: Session, config?: AppConfig): BillingMode {
+  // Check explicit config override first
+  if (config?.billing?.[session.agent_type]) {
+    return config.billing[session.agent_type]
+  }
+  // Defaults: Claude Code = subscription, others = api
+  if (session.agent_type === "claude_code") return "subscription"
+  return "api"
 }
 
-/** Whether cost warnings are meaningful for this session.
- *  Claude Code Max/Pro users don't pay per-token, so cost warnings are noise. */
-export function isCostMeaningful(session: Session): boolean {
-  // For Claude Code, cost is API-equivalent only — not a real charge for Max/Pro
-  // We can't distinguish Max vs API from transcript alone, so we check:
-  // if cost > 0 and agent is NOT claude_code, cost is real
-  if (session.agent_type !== "claude_code") return true
-  // For Claude Code: cost is always API-equivalent, not real spend
-  // TODO: detect API plan from provider hints in transcript if available
-  return false
+/** Whether a session should show token-first (subscription) or cost-first (api) views. */
+export function isSessionMaxPlan(session: Session, config?: AppConfig): boolean {
+  return getSessionBilling(session, config) === "subscription"
+}
+
+/** Whether cost warnings are meaningful for this session. */
+export function isCostMeaningful(session: Session, config?: AppConfig): boolean {
+  return getSessionBilling(session, config) === "api"
 }
 
 export const AGENT_COLORS: Record<AgentType, string> = {
@@ -175,4 +176,5 @@ export const api = {
   memoryEvents: (sessionId: string) => invoke<MemoryEventRow[]>("get_session_memory_events", { sessionId }),
   dailyCostSummary: () => invoke<DailyCostRow[]>("get_daily_cost_summary"),
   providerStatus: () => invoke<ProviderStatus[]>("get_provider_status"),
+  setBillingMode: (agentType: string, mode: BillingMode) => invoke<AppConfig>("set_billing_mode", { agentType, mode }),
 }

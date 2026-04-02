@@ -276,6 +276,18 @@ fn set_plan(plan: String) -> Result<config::AppConfig, String> {
     Ok(cfg)
 }
 
+#[tauri::command]
+fn set_billing_mode(agent_type: String, mode: String) -> Result<config::AppConfig, String> {
+    let mut cfg = config::load_config();
+    let billing_mode = match mode.as_str() {
+        "api" => config::BillingMode::Api,
+        _ => config::BillingMode::Subscription,
+    };
+    cfg.billing.insert(agent_type, billing_mode);
+    config::save_config(&cfg);
+    Ok(cfg)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let db = Arc::new(Database::new().expect("Failed to initialize database"));
@@ -328,6 +340,7 @@ pub fn run() {
             get_provider_status,
             get_config,
             set_plan,
+            set_billing_mode,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

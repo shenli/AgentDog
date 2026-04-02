@@ -1,4 +1,4 @@
-import type { Session, TurnRow, AgentType } from "./api"
+import type { Session, TurnRow, AgentType, AppConfig } from "./api"
 import { AGENT_LABELS, isCostMeaningful } from "./api"
 
 export type WarningSeverity = "info" | "warning" | "critical"
@@ -13,7 +13,7 @@ export interface Warning {
 }
 
 /** Analyze all sessions and return warnings for the Overview dashboard. */
-export function computeOverviewWarnings(sessions: Session[]): Warning[] {
+export function computeOverviewWarnings(sessions: Session[], config?: AppConfig): Warning[] {
   const warnings: Warning[] = []
 
   for (const s of sessions) {
@@ -23,7 +23,7 @@ export function computeOverviewWarnings(sessions: Session[]): Warning[] {
     const projectName = s.project_name.split("/").pop() ?? s.project_name
 
     // High cost session (only for agents where cost is a real charge)
-    if (s.total_cost_usd > 10 && isCostMeaningful(s)) {
+    if (s.total_cost_usd > 10 && isCostMeaningful(s, config)) {
       warnings.push({
         id: `high-cost-${s.id}`,
         severity: s.total_cost_usd > 50 ? "critical" : "warning",
@@ -86,7 +86,7 @@ export function computeOverviewWarnings(sessions: Session[]): Warning[] {
 }
 
 /** Analyze a single session's turns and return detailed warnings. */
-export function computeSessionWarnings(session: Session, turns: TurnRow[]): Warning[] {
+export function computeSessionWarnings(session: Session, turns: TurnRow[], config?: AppConfig): Warning[] {
   const warnings: Warning[] = []
   if (turns.length === 0) return warnings
 
@@ -157,7 +157,7 @@ export function computeSessionWarnings(session: Session, turns: TurnRow[]): Warn
   }
 
   // Cost spike: check last turn vs average (only for agents with real costs)
-  if (recentTurns.length >= 3 && isCostMeaningful(session)) {
+  if (recentTurns.length >= 3 && isCostMeaningful(session, config)) {
     const lastCost = recentTurns[recentTurns.length - 1].cost_usd
     const avgCost = recentTurns.reduce((s, t) => s + t.cost_usd, 0) / recentTurns.length
     if (avgCost > 0 && lastCost > avgCost * 5) {

@@ -3,8 +3,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, PieChart, Pie, Cell,
 } from "recharts"
-import type { Session, DailyCostRow, AgentType } from "../lib/api"
-import { api, AGENT_LABELS } from "../lib/api"
+import type { Session, DailyCostRow, AgentType, AppConfig, BillingMode } from "../lib/api"
+import { api, AGENT_LABELS, getSessionBilling } from "../lib/api"
 import { formatCost, formatTokens, formatPercent } from "../lib/format"
 import { WarningsBanner } from "./WarningsBanner"
 
@@ -12,6 +12,8 @@ interface Props {
   sessions: Session[]
   onSelectSession: (id: string) => void
   isMax: boolean
+  config?: AppConfig
+  onConfigChange?: () => void
 }
 
 const AGENT_COLORS: Record<string, string> = {
@@ -33,7 +35,7 @@ interface AgentBreakdown {
   totalCost: number
 }
 
-export function OverviewDashboard({ sessions, onSelectSession, isMax }: Props) {
+export function OverviewDashboard({ sessions, onSelectSession, isMax, config, onConfigChange }: Props) {
   const [dailyCost, setDailyCost] = useState<DailyCostRow[]>([])
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export function OverviewDashboard({ sessions, onSelectSession, isMax }: Props) {
   return (
     <div className="p-6 space-y-6">
       {/* Warnings + Provider Status */}
-      <WarningsBanner sessions={sessions} onSelectSession={onSelectSession} />
+      <WarningsBanner sessions={sessions} config={config} onSelectSession={onSelectSession} />
 
       {/* Summary cards */}
       <div className="grid grid-cols-4 gap-4">
@@ -185,6 +187,7 @@ export function OverviewDashboard({ sessions, onSelectSession, isMax }: Props) {
                           <div className="flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: a.color }} />
                             <span className="font-medium">{a.label}</span>
+                            <BillingBadge agentType={a.agent} config={config} onChanged={onConfigChange} />
                           </div>
                         </td>
                         <td className="py-2 pr-4 text-right tabular-nums text-zinc-400">{a.sessions}</td>
@@ -286,6 +289,38 @@ export function OverviewDashboard({ sessions, onSelectSession, isMax }: Props) {
         </div>
       )}
     </div>
+  )
+}
+
+function BillingBadge({ agentType, config, onChanged }: {
+  agentType: string
+  config?: AppConfig
+  onChanged?: () => void
+}) {
+  const billing = config?.billing?.[agentType]
+  // Only show for agents where it's ambiguous (Claude Code can be subscription or API)
+  const isDefault = !billing
+  const mode = billing ?? (agentType === "claude_code" ? "subscription" : "api")
+  const label = mode === "subscription" ? "sub" : "api"
+
+  const toggle = async () => {
+    const next: BillingMode = mode === "subscription" ? "api" : "subscription"
+    await api.setBillingMode(agentType, next)
+    onChanged?.()
+  }
+
+  return (
+    <button
+      onClick={toggle}
+      title={`Billing: ${mode === "subscription" ? "Subscription (flat rate)" : "API (pay per token)"}. Click to change.`}
+      className={`px-1.5 py-0 rounded text-[9px] font-medium transition-colors cursor-pointer
+        ${mode === "subscription"
+          ? "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25"
+          : "bg-amber-500/15 text-amber-400 hover:bg-amber-500/25"
+        }`}
+    >
+      {label}
+    </button>
   )
 }
 
