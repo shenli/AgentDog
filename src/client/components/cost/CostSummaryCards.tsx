@@ -41,7 +41,7 @@ export function CostSummaryCards({ session, turns, isMax }: Props) {
         { label: "Input Tokens", value: formatTokens(session.total_input_tokens) },
         { label: "Output Tokens", value: formatTokens(session.total_output_tokens) },
         { label: "Cache Hit Rate", value: formatPercent(cacheHitRate) },
-        { label: "Avg Tokens / Turn", value: formatTokens(avgTokensPerTurn) },
+        { label: "API Equivalent", value: formatCost(session.total_cost_usd), sub: `${turns.length} turns${multiModel ? `, ${models.size} models` : ""}` },
       ]
     : [
         { label: "Total Cost", value: formatCost(session.total_cost_usd) },
@@ -64,6 +64,9 @@ export function CostSummaryCards({ session, turns, isMax }: Props) {
           }`}>
             {card.value}
           </div>
+          {(card as any).sub && (
+            <div className="text-[10px] text-zinc-600 mt-0.5">{(card as any).sub}</div>
+          )}
         </div>
       ))}
     </div>

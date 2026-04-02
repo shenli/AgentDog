@@ -116,14 +116,25 @@ export const AGENT_LABELS: Record<AgentType, string> = {
 }
 
 /** Whether a session should show token-first (Max plan) or cost-first views.
- *  Claude Code defaults to Max (most power users). Codex/OpenClaw always cost. */
-export function isSessionMaxPlan(session: Session, globalOverride?: string): boolean {
-  if (globalOverride && globalOverride !== "auto") {
-    return globalOverride === "max"
-  }
-  // Claude Code: default to Max plan (token-first)
+ *  Claude Code defaults to Max (most power users). Codex/OpenClaw always cost.
+ *  Claude Code API users will still see cost as secondary info. */
+export function isSessionMaxPlan(session: Session): boolean {
+  // Claude Code: default to token-first (Max is the common plan)
+  // API users still see cost as secondary metric in TopBar
   if (session.agent_type === "claude_code") return true
   // Others: always cost-first (they're API-billed)
+  return false
+}
+
+/** Whether cost warnings are meaningful for this session.
+ *  Claude Code Max/Pro users don't pay per-token, so cost warnings are noise. */
+export function isCostMeaningful(session: Session): boolean {
+  // For Claude Code, cost is API-equivalent only — not a real charge for Max/Pro
+  // We can't distinguish Max vs API from transcript alone, so we check:
+  // if cost > 0 and agent is NOT claude_code, cost is real
+  if (session.agent_type !== "claude_code") return true
+  // For Claude Code: cost is always API-equivalent, not real spend
+  // TODO: detect API plan from provider hints in transcript if available
   return false
 }
 
