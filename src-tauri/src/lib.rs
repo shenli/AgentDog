@@ -264,6 +264,18 @@ async fn get_provider_status() -> Result<Vec<ProviderStatus>, String> {
 }
 
 #[tauri::command]
+fn set_pricing_profile(agent_type: String, profile: String) -> Result<config::AppConfig, String> {
+    let mut cfg = config::load_config();
+    if profile == "auto" {
+        cfg.pricing_profile.remove(&agent_type);
+    } else {
+        cfg.pricing_profile.insert(agent_type, profile);
+    }
+    config::save_config(&cfg);
+    Ok(cfg)
+}
+
+#[tauri::command]
 fn get_config() -> Result<config::AppConfig, String> {
     Ok(config::load_config())
 }
@@ -341,6 +353,7 @@ pub fn run() {
             get_config,
             set_plan,
             set_billing_mode,
+            set_pricing_profile,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

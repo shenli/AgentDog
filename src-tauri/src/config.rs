@@ -24,6 +24,10 @@ pub struct AppConfig {
     /// Per-agent billing mode override. Agents not listed use the default for their type.
     #[serde(default)]
     pub billing: HashMap<String, BillingMode>,
+    /// Per-agent pricing profile override. Value is a model prefix key
+    /// (e.g. "claude-opus-4" or a custom_pricing key). "auto" = detect from transcript.
+    #[serde(default)]
+    pub pricing_profile: HashMap<String, String>,
     /// Custom model pricing. Key is a model name prefix (e.g. "my-model" matches "my-model-v2").
     /// Prices are per million tokens.
     #[serde(default)]
@@ -61,6 +65,7 @@ impl Default for AppConfig {
             plan: default_plan(),
             enabled_agents: default_enabled_agents(),
             billing: HashMap::new(),
+            pricing_profile: HashMap::new(),
             custom_pricing: HashMap::new(),
         }
     }

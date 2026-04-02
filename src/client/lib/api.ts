@@ -112,6 +112,7 @@ export interface CustomModelPricing {
 export interface AppConfig {
   plan: string
   billing: Record<string, BillingMode>
+  pricing_profile?: Record<string, string>
   custom_pricing?: Record<string, CustomModelPricing>
 }
 
@@ -186,4 +187,5 @@ export const api = {
   dailyCostSummary: () => invoke<DailyCostRow[]>("get_daily_cost_summary"),
   providerStatus: () => invoke<ProviderStatus[]>("get_provider_status"),
   setBillingMode: (agentType: string, mode: BillingMode) => invoke<AppConfig>("set_billing_mode", { agentType, mode }),
+  setPricingProfile: (agentType: string, profile: string) => invoke<AppConfig>("set_pricing_profile", { agentType, profile }),
 }
