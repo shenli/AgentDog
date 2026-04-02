@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react"
-import type { Session, TurnRow } from "../lib/api"
-import { api, AGENT_LABELS, type AgentType } from "../lib/api"
+import type { Session, TurnRow, AppConfig } from "../lib/api"
+import { api, AGENT_LABELS, getSessionBilling, type AgentType } from "../lib/api"
 import { formatCost, formatTokens, formatPercent } from "../lib/format"
 
 interface Props {
   session: Session | null
   isMax: boolean
+  config?: AppConfig
 }
 
 const AGENT_DOT_COLORS: Record<string, string> = {
@@ -14,7 +15,7 @@ const AGENT_DOT_COLORS: Record<string, string> = {
   openclaw: "bg-violet-400",
 }
 
-export function TopBar({ session, isMax }: Props) {
+export function TopBar({ session, isMax, config }: Props) {
   const [stats, setStats] = useState<TopBarStats | null>(null)
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export function TopBar({ session, isMax }: Props) {
 
   const agentLabel = AGENT_LABELS[session.agent_type as AgentType] ?? session.agent_type
   const dotColor = AGENT_DOT_COLORS[session.agent_type] ?? "bg-zinc-400"
+  const billing = getSessionBilling(session, config)
   const totalTokens = session.total_input_tokens + session.total_output_tokens
   const cacheTotal = session.total_input_tokens + session.total_cache_read_tokens + session.total_cache_write_tokens
   const cacheHitRate = cacheTotal > 0 ? session.total_cache_read_tokens / cacheTotal : 0
@@ -61,6 +63,11 @@ export function TopBar({ session, isMax }: Props) {
         <div className="flex items-center gap-1.5">
           <span className={`w-2 h-2 rounded-full ${dotColor}`} />
           <span className="text-[10px] text-zinc-500 font-medium">{agentLabel}</span>
+          <span className={`text-[9px] font-medium ${
+            billing === "subscription" ? "text-zinc-600" : "text-amber-500/60"
+          }`}>
+            {billing === "subscription" ? "flat" : "api"}
+          </span>
         </div>
         <span className="text-sm font-medium text-zinc-200 truncate">
           {session.project_name}

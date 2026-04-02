@@ -29,6 +29,17 @@ export function App() {
     return () => { unsub1(); unsub2(); unsub3() }
   }, [ws.on, refresh])
 
+  // Listen for tray navigation events
+  useEffect(() => {
+    let unlisten: (() => void) | null = null
+    import("@tauri-apps/api/event").then(({ listen }) => {
+      listen<string>("navigate", (event) => {
+        setView(event.payload)
+      }).then((fn) => { unlisten = fn })
+    })
+    return () => { unlisten?.() }
+  }, [])
+
   const isSessionView = view !== "overview" && view !== "settings"
   const selected = isSessionView ? (sessions.find((s) => s.id === view) ?? null) : null
 
@@ -60,23 +71,38 @@ export function App() {
     <div className="flex h-screen bg-zinc-950 text-zinc-100">
       {/* Sidebar */}
       <div className="w-64 border-r border-zinc-800 flex flex-col">
-        <div className="p-3 border-b border-zinc-800">
-          <h1 className="text-base font-semibold tracking-tight flex items-center gap-1.5">
+        <div className="p-3 border-b border-zinc-800 flex items-center justify-between">
+          <button
+            onClick={() => setView("overview")}
+            className="text-base font-semibold tracking-tight flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+          >
             <span className="text-lg">🐕</span> AgentDog
-          </h1>
+          </button>
+          <button
+            onClick={() => setView("settings")}
+            className={`p-1.5 rounded transition-colors ${
+              view === "settings"
+                ? "text-blue-400 bg-blue-500/10"
+                : "text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800"
+            }`}
+            title="Settings"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
         </div>
 
-        {/* Nav */}
-        <div className="border-b border-zinc-800">
-          <NavButton label="Overview" active={view === "overview"} onClick={() => setView("overview")} />
-          <NavButton label="Settings" active={view === "settings"} onClick={() => setView("settings")} />
-        </div>
+        {/* Overview nav */}
+        <NavButton label="Overview" active={view === "overview"} onClick={() => setView("overview")} />
 
         <SessionList
           sessions={sessions}
           selectedId={isSessionView ? view : null}
           onSelect={setView}
           isMax={isMax}
+          config={config}
         />
       </div>
 
@@ -88,7 +114,7 @@ export function App() {
           </div>
         ) : selected ? (
           <>
-            <TopBar session={selected} isMax={isMax} />
+            <TopBar session={selected} isMax={isMax} config={config} />
 
             {/* Tabs */}
             <div className="border-b border-zinc-800 px-6">

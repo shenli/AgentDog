@@ -43,8 +43,9 @@ fn build_initial_menu(app: &AppHandle) -> Result<Menu<tauri::Wry>, Box<dyn std::
     let no_sessions = MenuItem::with_id(app, "no_sessions", "No active sessions", false, None::<&str>)?;
     let sep = PredefinedMenuItem::separator(app)?;
     let show = MenuItem::with_id(app, "show", "Open Dashboard", true, None::<&str>)?;
+    let settings = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-    let menu = Menu::with_items(app, &[&no_sessions, &sep, &show, &quit])?;
+    let menu = Menu::with_items(app, &[&no_sessions, &sep, &show, &settings, &quit])?;
     Ok(menu)
 }
 
@@ -55,6 +56,13 @@ fn handle_menu_event(app: &AppHandle, event: tauri::menu::MenuEvent) {
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.show();
                 let _ = window.set_focus();
+            }
+        }
+        "settings" => {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+                let _ = app.emit("navigate", "settings");
             }
         }
         "quit" => {
@@ -221,6 +229,9 @@ fn build_session_menu(
 
     let show = MenuItem::with_id(app, "show", "Open Dashboard", true, None::<&str>)?;
     menu.append(&show)?;
+
+    let settings = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
+    menu.append(&settings)?;
 
     let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     menu.append(&quit)?;

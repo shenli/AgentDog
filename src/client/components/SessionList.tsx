@@ -1,6 +1,6 @@
 import React from "react"
-import type { Session, AgentType } from "../lib/api"
-import { AGENT_LABELS } from "../lib/api"
+import type { Session, AgentType, AppConfig } from "../lib/api"
+import { AGENT_LABELS, getSessionBilling } from "../lib/api"
 import { formatCost, formatTokens } from "../lib/format"
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
   selectedId: string | null
   onSelect: (id: string) => void
   isMax: boolean
+  config?: AppConfig
 }
 
 const AGENT_BADGE_COLORS: Record<string, string> = {
@@ -22,7 +23,7 @@ const AGENT_SHORT: Record<string, string> = {
   openclaw: "OC",
 }
 
-export function SessionList({ sessions, selectedId, onSelect, isMax }: Props) {
+export function SessionList({ sessions, selectedId, onSelect, isMax, config }: Props) {
   const active = sessions.filter((s) => s.status === "active")
   const recent = sessions.filter(
     (s) => s.status === "idle" || s.status === "ended"
@@ -31,10 +32,10 @@ export function SessionList({ sessions, selectedId, onSelect, isMax }: Props) {
   return (
     <div className="flex-1 overflow-auto">
       {active.length > 0 && (
-        <SessionGroup label="Active" sessions={active} selectedId={selectedId} onSelect={onSelect} isMax={isMax} />
+        <SessionGroup label="Active" sessions={active} selectedId={selectedId} onSelect={onSelect} isMax={isMax} config={config} />
       )}
       {recent.length > 0 && (
-        <SessionGroup label="Recent" sessions={recent} selectedId={selectedId} onSelect={onSelect} isMax={isMax} />
+        <SessionGroup label="Recent" sessions={recent} selectedId={selectedId} onSelect={onSelect} isMax={isMax} config={config} />
       )}
       {sessions.length === 0 && (
         <div className="px-4 py-8 text-center text-zinc-600 text-sm">
@@ -53,12 +54,14 @@ function SessionGroup({
   selectedId,
   onSelect,
   isMax,
+  config,
 }: {
   label: string
   sessions: Session[]
   selectedId: string | null
   onSelect: (id: string) => void
   isMax: boolean
+  config?: AppConfig
 }) {
   return (
     <div>
@@ -72,6 +75,7 @@ function SessionGroup({
           selected={s.id === selectedId}
           onSelect={() => onSelect(s.id)}
           isMax={isMax}
+          config={config}
         />
       ))}
     </div>
@@ -83,12 +87,15 @@ function SessionItem({
   selected,
   onSelect,
   isMax,
+  config,
 }: {
   session: Session
   selected: boolean
   onSelect: () => void
   isMax: boolean
+  config?: AppConfig
 }) {
+  const billing = getSessionBilling(session, config)
   const primaryMetric = isMax
     ? formatTokens(session.total_input_tokens + session.total_output_tokens)
     : formatCost(session.total_cost_usd)
@@ -114,6 +121,11 @@ function SessionItem({
         <span className={`px-1 py-0 rounded text-[9px] font-bold leading-tight flex-shrink-0 ${badgeColor}`}
               title={AGENT_LABELS[session.agent_type as AgentType] ?? session.agent_type}>
           {agentShort}
+        </span>
+        <span className={`text-[8px] font-medium flex-shrink-0 ${
+          billing === "subscription" ? "text-zinc-600" : "text-amber-500/50"
+        }`} title={billing === "subscription" ? "Subscription (flat rate)" : "Pay-per-token API"}>
+          {billing === "subscription" ? "$flat" : "$api"}
         </span>
         <span className="text-sm font-medium truncate flex-1">
           {shortProjectName(session.project_name)}
