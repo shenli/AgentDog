@@ -1,12 +1,14 @@
 # AgentDog
 
-Real-time monitoring dashboard for local AI agents.
+Real-time monitoring dashboard for local AI agents. macOS only.
 
-AgentDog watches your Claude Code, OpenAI Codex CLI, and OpenClaw sessions as they run, giving you live visibility into token usage, costs, context window pressure, and tool call patterns — all from a single desktop app.
+AgentDog is a lightweight desktop app that sits in your menu bar and watches your AI agent sessions as they run — Claude Code, OpenAI Codex CLI, and OpenClaw. It gives you live visibility into token usage, costs, context window health, and tool call patterns by reading transcript files directly from disk. No API keys needed. No agent modifications. Just install and it starts tracking.
 
-## Why
+## About
 
-AI agents burn through tokens with no visibility. You don't know how much a session costs until it's over. You can't see when context is about to overflow. You don't know which tool calls are eating your budget. AgentDog fixes this by reading agent transcript files directly from disk — no API keys, no config, no agent modifications needed.
+AgentDog was built out of frustration with flying blind while running AI agents. There's no easy way to know how much a session is costing, when context is about to overflow, or which tool calls are wasting tokens. Existing solutions require instrumenting your agent, setting up tracing infrastructure, or waiting for features that never ship (looking at you, OpenClaw OTEL PR #21290).
+
+AgentDog takes a different approach: it reads the transcript files that agents already write to disk, parses them in real-time, and surfaces the insights in a clean dashboard. It's read-only, runs locally, and works with multiple agents simultaneously.
 
 ## Features
 
@@ -19,12 +21,19 @@ AI agents burn through tokens with no visibility. You don't know how much a sess
 - **Cross-session cost overview** — daily spending trends across all agents
 - **Anomaly detection** — flags turns that cost 3x+ the running average
 - **Tool cost ranking** — which tools consume the most tokens
-- **System tray** — always-on status with quick session access
-- **Max plan aware** — shows token-based views for Max, cost-based for API/Pro
+- **Provider status** — monitors Anthropic and OpenAI status pages for agent-related outages
+- **Warnings** — proactive alerts for context pressure, cache instability, cost spikes, session stalls
+- **System tray** — always-on menu bar icon with quick session access and settings
+- **Plan-aware** — auto-detects subscription vs API billing per agent, configurable in settings
+- **Custom pricing** — define your own per-token rates for third-party LLM providers
+
+## Requirements
+
+- **macOS** (Windows and Linux are not supported yet)
+- [Rust](https://rustup.rs/) (for building the backend)
+- [Node.js](https://nodejs.org/) 18+
 
 ## Install
-
-Requires [Rust](https://rustup.rs/) and [Node.js](https://nodejs.org/) (18+).
 
 ```bash
 git clone https://github.com/shenli/AgentDog.git
@@ -45,9 +54,9 @@ AgentDog reads transcript files that agents already write to disk:
 | Codex CLI | `~/.codex/state_5.sqlite` + `~/.codex/sessions/**/*.jsonl` |
 | OpenClaw | `~/.openclaw/agents/*/sessions/*.jsonl` + `sessions.json` |
 
-No modifications to the agents. No API keys. No network calls. AgentDog is read-only — it never writes to agent directories.
+No modifications to the agents. No API keys. No network calls (except optional status page checks). AgentDog is read-only — it never writes to agent directories.
 
-Session data is stored locally in `~/.agentdog/data.sqlite`.
+Session data is stored locally in `~/.agentdog/data.sqlite`. Configuration in `~/.agentdog/config.json`.
 
 ## Architecture
 
@@ -72,7 +81,7 @@ src/client/
 │   ├── context/      # Context tab (utilization, cache efficiency, compactions)
 │   └── memory/       # Memory tab (file tracking, stale detection)
 ├── hooks/            # React hooks (sessions, websocket, config)
-└── lib/              # API types, formatters
+└── lib/              # API types, formatters, warnings
 ```
 
 ### Adding a new agent
