@@ -22,6 +22,8 @@ function formatResetTime(unixSeconds: number): string {
   return `${date.toLocaleDateString([], { month: "short", day: "numeric" })} ${time}`
 }
 
+/** Shows rate limit usage bars. Only fires for agents that embed rate limit
+ *  data in their transcripts (currently Codex CLI). */
 export function RateLimitBanner({ ws }: Props) {
   const [rateLimit, setRateLimit] = useState<RateLimitInfo | null>(null)
 
