@@ -96,4 +96,4 @@ All agents produce the same `ParseEvent` types, so the UI works automatically.
 
 ## License
 
-MIT
+Apache 2.0
