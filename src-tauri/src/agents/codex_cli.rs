@@ -1,6 +1,6 @@
 use crate::agent::{AgentBackend, AgentFeature, AgentParser, AgentType, DiscoveredSession};
 use crate::parser::{
-    truncate_str, ParseEvent, ParsedAnomaly, ParsedCompaction, ParsedToolCall, ParsedToolResult, ParsedTurn,
+    truncate_str, ParseEvent, ParsedAnomaly, ParsedCompaction, ParsedRateLimit, ParsedToolCall, ParsedToolResult, ParsedTurn,
 };
 use crate::pricing::calculate_cost;
 use serde_json::Value;
@@ -330,6 +330,21 @@ impl AgentParser for CodexCliParser {
                             if let Some(ctx_window) = info.get("model_context_window").and_then(|v| v.as_i64()) {
                                 self.model_context_window = Some(ctx_window);
                             }
+                        }
+
+                        // Extract rate limits
+                        if let Some(rl) = payload.get("rate_limits") {
+                            let primary = rl.get("primary");
+                            let secondary = rl.get("secondary");
+                            events.push(ParseEvent::RateLimit(ParsedRateLimit {
+                                session_id: self.session_id.clone(),
+                                timestamp,
+                                plan_type: rl.get("plan_type").and_then(|v| v.as_str()).map(|s| s.to_string()),
+                                primary_used_percent: primary.and_then(|p| p.get("used_percent").and_then(|v| v.as_f64())),
+                                primary_resets_at: primary.and_then(|p| p.get("resets_at").and_then(|v| v.as_i64())),
+                                secondary_used_percent: secondary.and_then(|p| p.get("used_percent").and_then(|v| v.as_f64())),
+                                secondary_resets_at: secondary.and_then(|p| p.get("resets_at").and_then(|v| v.as_i64())),
+                            }));
                         }
                     }
 

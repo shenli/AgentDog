@@ -166,6 +166,16 @@ export interface DailyCostRow {
   turn_count: number
 }
 
+export interface RateLimitInfo {
+  session_id: string
+  timestamp: number
+  plan_type: string | null
+  primary_used_percent: number | null
+  primary_resets_at: number | null   // unix seconds
+  secondary_used_percent: number | null
+  secondary_resets_at: number | null
+}
+
 export interface ProviderStatus {
   provider: string
   component: string

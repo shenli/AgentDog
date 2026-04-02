@@ -283,6 +283,9 @@ impl SessionWatcher {
             ParseEvent::Compaction(c) => {
                 let _ = db.insert_compaction_event(&c.session_id, c.timestamp, c.tokens_before, c.tokens_after, c.tokens_saved);
             }
+            ParseEvent::RateLimit(_) => {
+                // Rate limits are only emitted to frontend, not stored in DB
+            }
         }
     }
 
@@ -366,6 +369,9 @@ impl SessionWatcher {
                     c.tokens_saved,
                 );
                 let _ = app_handle.emit("compaction", c);
+            }
+            ParseEvent::RateLimit(rl) => {
+                let _ = app_handle.emit("rate_limit", rl);
             }
         }
     }

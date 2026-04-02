@@ -74,6 +74,19 @@ pub struct ParsedCompaction {
     pub tokens_saved: i64,
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub struct ParsedRateLimit {
+    pub session_id: String,
+    pub timestamp: i64,
+    pub plan_type: Option<String>,
+    /// Primary window (e.g., 5-hour session limit)
+    pub primary_used_percent: Option<f64>,
+    pub primary_resets_at: Option<i64>,
+    /// Secondary window (e.g., weekly limit)
+    pub secondary_used_percent: Option<f64>,
+    pub secondary_resets_at: Option<i64>,
+}
+
 pub enum ParseEvent {
     Turn(ParsedTurn),
     ToolCall(ParsedToolCall),
@@ -81,6 +94,7 @@ pub enum ParseEvent {
     Anomaly(ParsedAnomaly),
     ContextSnapshot(ParsedContextSnapshot),
     Compaction(ParsedCompaction),
+    RateLimit(ParsedRateLimit),
 }
 
 // ─── Shared utilities ───

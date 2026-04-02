@@ -7,12 +7,14 @@ import type { Session, DailyCostRow, AgentType, AppConfig } from "../lib/api"
 import { api, AGENT_LABELS } from "../lib/api"
 import { formatCost, formatTokens, formatPercent } from "../lib/format"
 import { WarningsBanner } from "./WarningsBanner"
+import { RateLimitBanner } from "./RateLimitBanner"
 
 interface Props {
   sessions: Session[]
   onSelectSession: (id: string) => void
   isMax: boolean
   config?: AppConfig
+  ws: { on: (type: string, handler: (msg: any) => void) => () => void }
 }
 
 const AGENT_COLORS: Record<string, string> = {
@@ -34,7 +36,7 @@ interface AgentBreakdown {
   totalCost: number
 }
 
-export function OverviewDashboard({ sessions, onSelectSession, isMax, config }: Props) {
+export function OverviewDashboard({ sessions, onSelectSession, isMax, config, ws }: Props) {
   const [dailyCost, setDailyCost] = useState<DailyCostRow[]>([])
 
   useEffect(() => {
@@ -99,6 +101,7 @@ export function OverviewDashboard({ sessions, onSelectSession, isMax, config }: 
   return (
     <div className="p-6 space-y-6">
       {/* Warnings + Provider Status */}
+      <RateLimitBanner ws={ws} />
       <WarningsBanner sessions={sessions} config={config} onSelectSession={onSelectSession} />
 
       {/* Summary cards */}

@@ -1,6 +1,7 @@
 import React from "react"
 import type { Session, AgentType, AppConfig } from "../lib/api"
 import { AGENT_LABELS, getSessionBilling } from "../lib/api"
+import { AgentIcon } from "./AgentIcon"
 import { formatCost, formatTokens } from "../lib/format"
 
 interface Props {
@@ -11,17 +12,6 @@ interface Props {
   config?: AppConfig
 }
 
-const AGENT_BADGE_COLORS: Record<string, string> = {
-  claude_code: "bg-orange-500/20 text-orange-400",
-  codex_cli: "bg-emerald-500/20 text-emerald-400",
-  openclaw: "bg-violet-500/20 text-violet-400",
-}
-
-const AGENT_SHORT: Record<string, string> = {
-  claude_code: "CC",
-  codex_cli: "CX",
-  openclaw: "OC",
-}
 
 export function SessionList({ sessions, selectedId, onSelect, isMax, config }: Props) {
   const active = sessions.filter((s) => s.status === "active")
@@ -101,8 +91,6 @@ function SessionItem({
     : formatCost(session.total_cost_usd)
 
   const health = getSessionHealth(session)
-  const badgeColor = AGENT_BADGE_COLORS[session.agent_type] ?? "bg-zinc-700 text-zinc-400"
-  const agentShort = AGENT_SHORT[session.agent_type] ?? "?"
 
   return (
     <button
@@ -118,15 +106,7 @@ function SessionItem({
               : "bg-zinc-600"
           }`}
         />
-        <span className={`px-1 py-0 rounded text-[9px] font-bold leading-tight flex-shrink-0 ${badgeColor}`}
-              title={AGENT_LABELS[session.agent_type as AgentType] ?? session.agent_type}>
-          {agentShort}
-        </span>
-        <span className={`text-[8px] font-medium flex-shrink-0 ${
-          billing === "subscription" ? "text-zinc-600" : "text-amber-500/50"
-        }`} title={billing === "subscription" ? "Subscription (flat rate)" : "Pay-per-token API"}>
-          {billing === "subscription" ? "$flat" : "$api"}
-        </span>
+        <AgentIcon agent={session.agent_type} size={16} />
         <span className="text-sm font-medium truncate flex-1">
           {shortProjectName(session.project_name)}
         </span>

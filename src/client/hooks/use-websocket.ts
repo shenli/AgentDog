@@ -34,6 +34,7 @@ export function useWebSocket(_sessionId?: string | null) {
       "session_discovered",
       "session_status_change",
       "context_snapshot",
+      "rate_limit",
     ]
 
     const setupListeners = async () => {

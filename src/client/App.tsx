@@ -154,6 +154,7 @@ export function App() {
                 onSelectSession={setView}
                 isMax={isMax}
                 config={config}
+                ws={ws}
               />
             </div>
           ) : (
