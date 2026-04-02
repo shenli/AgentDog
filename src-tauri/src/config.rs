@@ -47,6 +47,7 @@ impl Default for AppConfig {
 impl AppConfig {
     /// Get the billing mode for an agent type.
     /// Uses explicit config if set, otherwise falls back to sensible defaults.
+    #[allow(dead_code)]
     pub fn billing_mode(&self, agent_type: &str) -> BillingMode {
         if let Some(mode) = self.billing.get(agent_type) {
             return mode.clone();

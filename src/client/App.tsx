@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { SessionList } from "./components/SessionList"
 import { TopBar } from "./components/TopBar"
 import { OverviewDashboard } from "./components/OverviewDashboard"
+import { SettingsPage } from "./components/SettingsPage"
 import { CostTab } from "./components/cost/CostTab"
 import { ContextTab } from "./components/context/ContextTab"
 import { MemoryTab } from "./components/memory/MemoryTab"
@@ -11,10 +12,11 @@ import { useConfig } from "./hooks/use-config"
 import { AGENT_FEATURES, isSessionMaxPlan, type AgentType } from "./lib/api"
 
 type TabId = "cost" | "context" | "memory"
+type SidebarView = "overview" | "settings" | string // string = session ID
 
 export function App() {
   const { sessions, refresh } = useSessions()
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [view, setView] = useState<SidebarView>("overview")
   const [activeTab, setActiveTab] = useState<TabId>("cost")
   const ws = useWebSocket()
   const { config, refreshConfig } = useConfig()
@@ -27,7 +29,8 @@ export function App() {
     return () => { unsub1(); unsub2(); unsub3() }
   }, [ws.on, refresh])
 
-  const selected = sessions.find((s) => s.id === selectedId) ?? null
+  const isSessionView = view !== "overview" && view !== "settings"
+  const selected = isSessionView ? (sessions.find((s) => s.id === view) ?? null) : null
 
   // Per-session: auto-detect token-first vs cost-first, respecting config overrides
   const isMax = selected ? isSessionMaxPlan(selected, config) : true
@@ -63,28 +66,27 @@ export function App() {
           </h1>
         </div>
 
-        {/* Overview button */}
-        <button
-          onClick={() => setSelectedId(null)}
-          className={`px-4 py-2 text-left text-sm font-medium transition-colors border-b border-zinc-800
-            ${selectedId === null
-              ? "text-zinc-100 bg-zinc-800/50"
-              : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30"}`}
-        >
-          Overview
-        </button>
+        {/* Nav */}
+        <div className="border-b border-zinc-800">
+          <NavButton label="Overview" active={view === "overview"} onClick={() => setView("overview")} />
+          <NavButton label="Settings" active={view === "settings"} onClick={() => setView("settings")} />
+        </div>
 
         <SessionList
           sessions={sessions}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
+          selectedId={isSessionView ? view : null}
+          onSelect={setView}
           isMax={isMax}
         />
       </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {selected ? (
+        {view === "settings" ? (
+          <div className="flex-1 overflow-auto">
+            <SettingsPage config={config} onConfigChange={refreshConfig} />
+          </div>
+        ) : selected ? (
           <>
             <TopBar session={selected} isMax={isMax} />
 
@@ -123,10 +125,9 @@ export function App() {
             <div className="flex-1 overflow-auto">
               <OverviewDashboard
                 sessions={sessions}
-                onSelectSession={setSelectedId}
+                onSelectSession={setView}
                 isMax={isMax}
                 config={config}
-                onConfigChange={refreshConfig}
               />
             </div>
           ) : (
@@ -135,6 +136,20 @@ export function App() {
         )}
       </div>
     </div>
+  )
+}
+
+function NavButton({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full px-4 py-2 text-left text-sm font-medium transition-colors
+        ${active
+          ? "text-zinc-100 bg-zinc-800/50"
+          : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30"}`}
+    >
+      {label}
+    </button>
   )
 }
 
