@@ -52,25 +52,28 @@ function CodexIcon({ size, className }: { size: number; className: string }) {
   )
 }
 
-/** OpenClaw — cloud with terminal prompt, inspired by their logo */
+/** OpenClaw — red round character with antennae and teal eyes */
 function OpenClawIcon({ size, className }: { size: number; className: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={className} fill="none">
-      <rect width="24" height="24" rx="5" fill="#7C3AED" fillOpacity="0.15" />
-      <path
-        d="M6 16C4.34 16 3 14.66 3 13C3 11.34 4.34 10 6 10C6 7.24 8.24 5 11 5C13.42 5 15.44 6.72 15.9 9.03C16.26 9.01 16.63 9 17 9C19.21 9 21 10.79 21 13C21 15.21 19.21 17 17 17"
-        stroke="#8B5CF6"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M9 15L11 17L9 19"
-        stroke="#A78BFA"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <line x1="13" y1="19" x2="16" y2="19" stroke="#A78BFA" strokeWidth="1.5" strokeLinecap="round" />
+      <rect width="24" height="24" rx="5" fill="#DC2626" fillOpacity="0.12" />
+      {/* Antennae */}
+      <line x1="9" y1="5" x2="8" y2="3" stroke="#DC2626" strokeWidth="1" strokeLinecap="round" />
+      <line x1="15" y1="5" x2="16" y2="3" stroke="#DC2626" strokeWidth="1" strokeLinecap="round" />
+      {/* Body */}
+      <ellipse cx="12" cy="12" rx="7" ry="6.5" fill="#DC2626" />
+      {/* Arms */}
+      <circle cx="4.5" cy="12" r="1.5" fill="#B91C1C" />
+      <circle cx="19.5" cy="12" r="1.5" fill="#B91C1C" />
+      {/* Eyes */}
+      <circle cx="9.5" cy="11" r="1.8" fill="#0D0D0D" />
+      <circle cx="14.5" cy="11" r="1.8" fill="#0D0D0D" />
+      <circle cx="9.5" cy="10.8" r="1" fill="#2DD4BF" />
+      <circle cx="14.5" cy="10.8" r="1" fill="#2DD4BF" />
+      {/* Legs */}
+      <rect x="8" y="18" width="1.5" height="3" rx="0.5" fill="#DC2626" />
+      <rect x="11" y="18" width="1.5" height="3" rx="0.5" fill="#DC2626" />
+      <rect x="14" y="18" width="1.5" height="3" rx="0.5" fill="#DC2626" />
     </svg>
   )
 }
