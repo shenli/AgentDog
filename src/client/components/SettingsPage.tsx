@@ -182,6 +182,17 @@ export function SettingsPage({ config, onConfigChange }: Props) {
           <p className="mt-1 text-xs text-zinc-600">
             Config: ~/.agentdog/config.json &middot; Data: ~/.agentdog/data.sqlite
           </p>
+          <p className="mt-3 text-xs text-zinc-500">
+            Questions, bugs, or feature requests?{" "}
+            <a
+              href="https://github.com/shenli/AgentDog/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 underline"
+            >
+              File an issue on GitHub
+            </a>
+          </p>
         </div>
       </section>
     </div>
