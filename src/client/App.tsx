@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { SessionList } from "./components/SessionList"
 import { TopBar } from "./components/TopBar"
 import { OverviewDashboard } from "./components/OverviewDashboard"
@@ -16,9 +16,8 @@ export function App() {
   const { sessions, refresh } = useSessions()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabId>("cost")
-  const [showSettings, setShowSettings] = useState(false)
   const ws = useWebSocket()
-  const { config, setPlan } = useConfig()
+  const { config } = useConfig()
 
   // Refresh sessions on WebSocket events
   useEffect(() => {
@@ -31,9 +30,7 @@ export function App() {
   const selected = sessions.find((s) => s.id === selectedId) ?? null
 
   // Per-session: auto-detect token-first (Max) vs cost-first based on agent type
-  const isMax = selected
-    ? isSessionMaxPlan(selected, config.plan)
-    : config.plan === "max"
+  const isMax = selected ? isSessionMaxPlan(selected) : true
 
   // Determine which tabs are available for the selected agent
   const agentFeatures = selected
@@ -61,45 +58,9 @@ export function App() {
       {/* Sidebar */}
       <div className="w-64 border-r border-zinc-800 flex flex-col">
         <div className="p-3 border-b border-zinc-800">
-          <div className="flex items-center justify-between">
-            <h1 className="text-base font-semibold tracking-tight flex items-center gap-1.5">
-              <span className="text-lg">🐕</span> AgentDog
-            </h1>
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="text-zinc-600 hover:text-zinc-400 transition-colors p-1 rounded"
-              title="Settings"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Settings panel — collapsed by default */}
-          {showSettings && (
-            <div className="mt-2">
-              <div className="text-[10px] text-zinc-600 mb-1">Display mode override</div>
-              <div className="flex gap-1">
-                {(["auto", "max", "api"] as const).map((plan) => (
-                  <button
-                    key={plan}
-                    onClick={() => setPlan(plan)}
-                    className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors uppercase
-                      ${config.plan === plan
-                        ? "bg-blue-500/20 text-blue-400"
-                        : "text-zinc-600 hover:text-zinc-400"}`}
-                  >
-                    {plan === "auto" ? "Auto" : plan === "max" ? "Tokens" : "Cost"}
-                  </button>
-                ))}
-              </div>
-              <div className="text-[9px] text-zinc-700 mt-1">
-                Auto: Claude Code shows tokens, others show cost
-              </div>
-            </div>
-          )}
+          <h1 className="text-base font-semibold tracking-tight flex items-center gap-1.5">
+            <span className="text-lg">🐕</span> AgentDog
+          </h1>
         </div>
 
         {/* Overview button */}

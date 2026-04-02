@@ -22,8 +22,8 @@ export function computeOverviewWarnings(sessions: Session[]): Warning[] {
     const agentLabel = AGENT_LABELS[s.agent_type as AgentType] ?? s.agent_type
     const projectName = s.project_name.split("/").pop() ?? s.project_name
 
-    // High cost session
-    if (s.total_cost_usd > 10) {
+    // High cost session (skip for Claude Code — Max plan users don't pay per-token)
+    if (s.total_cost_usd > 10 && s.agent_type !== "claude_code") {
       warnings.push({
         id: `high-cost-${s.id}`,
         severity: s.total_cost_usd > 50 ? "critical" : "warning",
@@ -156,8 +156,8 @@ export function computeSessionWarnings(session: Session, turns: TurnRow[]): Warn
     }
   }
 
-  // Cost spike: check last turn vs average
-  if (recentTurns.length >= 3) {
+  // Cost spike: check last turn vs average (skip for Claude Code Max)
+  if (recentTurns.length >= 3 && session.agent_type !== "claude_code") {
     const lastCost = recentTurns[recentTurns.length - 1].cost_usd
     const avgCost = recentTurns.reduce((s, t) => s + t.cost_usd, 0) / recentTurns.length
     if (avgCost > 0 && lastCost > avgCost * 5) {
