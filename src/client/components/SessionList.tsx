@@ -114,15 +114,13 @@ function SessionItem({
           {primaryMetric}
         </span>
       </div>
-      <div className="mt-0.5 ml-4 text-[10px] text-zinc-600 flex gap-2">
+      <div className="mt-0.5 ml-7 text-[10px] text-zinc-600 flex gap-2">
         {session.status === "active" ? (
           <span className="text-green-500/70">{formatDuration(Date.now() - session.started_at)}</span>
         ) : (
           <span>{formatTimeAgo(session.started_at)}</span>
         )}
-        {session.model && (
-          <span className="text-zinc-700 truncate">{session.model}</span>
-        )}
+        <span className="text-zinc-700 truncate">{session.model ?? ""}</span>
       </div>
     </button>
   )
