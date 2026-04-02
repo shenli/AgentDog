@@ -101,9 +101,18 @@ export interface MemoryEventRow {
 
 export type BillingMode = "subscription" | "api"
 
+export interface CustomModelPricing {
+  input_per_million: number
+  output_per_million: number
+  cache_read_per_million?: number
+  cache_write_per_million?: number
+  context_window?: number
+}
+
 export interface AppConfig {
   plan: string
   billing: Record<string, BillingMode>
+  custom_pricing?: Record<string, CustomModelPricing>
 }
 
 export const AGENT_FEATURES: Record<AgentType, Set<string>> = {

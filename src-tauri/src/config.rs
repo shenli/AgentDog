@@ -24,6 +24,27 @@ pub struct AppConfig {
     /// Per-agent billing mode override. Agents not listed use the default for their type.
     #[serde(default)]
     pub billing: HashMap<String, BillingMode>,
+    /// Custom model pricing. Key is a model name prefix (e.g. "my-model" matches "my-model-v2").
+    /// Prices are per million tokens.
+    #[serde(default)]
+    pub custom_pricing: HashMap<String, CustomModelPricing>,
+}
+
+/// User-defined pricing for models not in the built-in table.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CustomModelPricing {
+    pub input_per_million: f64,
+    pub output_per_million: f64,
+    #[serde(default)]
+    pub cache_read_per_million: f64,
+    #[serde(default)]
+    pub cache_write_per_million: f64,
+    #[serde(default = "default_context_window")]
+    pub context_window: i64,
+}
+
+fn default_context_window() -> i64 {
+    200_000
 }
 
 fn default_plan() -> String {
@@ -40,6 +61,7 @@ impl Default for AppConfig {
             plan: default_plan(),
             enabled_agents: default_enabled_agents(),
             billing: HashMap::new(),
+            custom_pricing: HashMap::new(),
         }
     }
 }

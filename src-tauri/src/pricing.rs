@@ -1,3 +1,4 @@
+use crate::config;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
@@ -10,7 +11,32 @@ pub struct ModelPricing {
     pub context_window_max: i64,   // with Max plan (1M for opus)
 }
 
-pub fn get_pricing(model: &str) -> Option<&'static ModelPricing> {
+/// Look up custom pricing from config for a model name.
+/// Matches by prefix: "my-model" matches "my-model-v2".
+fn get_custom_pricing(model: &str) -> Option<ModelPricing> {
+    let cfg = config::load_config();
+    for (prefix, custom) in &cfg.custom_pricing {
+        if model.starts_with(prefix.as_str()) {
+            return Some(ModelPricing {
+                input_per_million: custom.input_per_million,
+                output_per_million: custom.output_per_million,
+                cache_write_per_million: custom.cache_write_per_million,
+                cache_read_per_million: custom.cache_read_per_million,
+                context_window: custom.context_window,
+                context_window_max: custom.context_window,
+            });
+        }
+    }
+    None
+}
+
+pub fn get_pricing(model: &str) -> Option<ModelPricing> {
+    // Check custom pricing first
+    if let Some(custom) = get_custom_pricing(model) {
+        return Some(custom);
+    }
+
+    // Built-in pricing table
     static OPUS: ModelPricing = ModelPricing {
         input_per_million: 15.0,
         output_per_million: 75.0,
@@ -72,20 +98,20 @@ pub fn get_pricing(model: &str) -> Option<&'static ModelPricing> {
 
     // Claude models
     if model.starts_with("claude-opus-4") {
-        Some(&OPUS)
+        Some(OPUS.clone())
     } else if model.starts_with("claude-sonnet-4") {
-        Some(&SONNET)
+        Some(SONNET.clone())
     } else if model.starts_with("claude-haiku-4") {
-        Some(&HAIKU)
+        Some(HAIKU.clone())
     // OpenAI models
     } else if model.starts_with("gpt-5") {
-        Some(&GPT5)
+        Some(GPT5.clone())
     } else if model.starts_with("o3") {
-        Some(&O3)
+        Some(O3.clone())
     } else if model.starts_with("gpt-4o") {
-        Some(&GPT4O)
+        Some(GPT4O.clone())
     } else if model.starts_with("o4-mini") {
-        Some(&O4_MINI)
+        Some(O4_MINI.clone())
     } else {
         None
     }

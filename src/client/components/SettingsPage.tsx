@@ -94,6 +94,44 @@ export function SettingsPage({ config, onConfigChange }: Props) {
         </div>
       </section>
 
+      {/* Custom pricing */}
+      <section className="mb-8">
+        <h3 className="text-sm font-medium text-zinc-400 mb-3">Custom Model Pricing</h3>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+          <p className="text-xs text-zinc-500 mb-3">
+            For third-party LLM providers with different rates, add custom pricing
+            to <span className="font-mono text-zinc-400">~/.agentdog/config.json</span>:
+          </p>
+          <pre className="text-[11px] text-zinc-400 bg-zinc-950 rounded p-3 overflow-x-auto">{`{
+  "custom_pricing": {
+    "my-custom-model": {
+      "input_per_million": 3.0,
+      "output_per_million": 15.0,
+      "cache_read_per_million": 0.3,
+      "context_window": 200000
+    }
+  }
+}`}</pre>
+          <p className="text-[10px] text-zinc-600 mt-2">
+            Keys match by prefix: <span className="font-mono">"claude-sonnet"</span> matches <span className="font-mono">"claude-sonnet-4-6"</span>.
+            Custom pricing takes priority over built-in prices.
+          </p>
+          {Object.keys(config.custom_pricing ?? {}).length > 0 && (
+            <div className="mt-3 border-t border-zinc-800 pt-3">
+              <div className="text-xs text-zinc-500 mb-2">Active custom pricing:</div>
+              {Object.entries(config.custom_pricing ?? {}).map(([prefix, p]) => (
+                <div key={prefix} className="flex items-center gap-3 text-xs py-1">
+                  <span className="font-mono text-zinc-300">{prefix}</span>
+                  <span className="text-zinc-500">
+                    ${(p as any).input_per_million}/M in, ${(p as any).output_per_million}/M out
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* About */}
       <section>
         <h3 className="text-sm font-medium text-zinc-400 mb-3">About</h3>
