@@ -6,6 +6,7 @@ import {
 import type { Session, DailyCostRow, AgentType } from "../lib/api"
 import { api, AGENT_LABELS } from "../lib/api"
 import { formatCost, formatTokens, formatPercent } from "../lib/format"
+import { WarningsBanner } from "./WarningsBanner"
 
 interface Props {
   sessions: Session[]
@@ -96,6 +97,9 @@ export function OverviewDashboard({ sessions, onSelectSession, isMax }: Props) {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Warnings + Provider Status */}
+      <WarningsBanner sessions={sessions} onSelectSession={onSelectSession} />
+
       {/* Summary cards */}
       <div className="grid grid-cols-4 gap-4">
         <SummaryCard label="Active Sessions" value={`${active.length}`} sub={`${sessions.length} total`} />

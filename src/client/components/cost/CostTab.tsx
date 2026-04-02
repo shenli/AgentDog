@@ -6,6 +6,8 @@ import { TokenComposition } from "./TokenComposition"
 import { AnomalyLog } from "./AnomalyLog"
 import { ToolCostRanking } from "./ToolCostRanking"
 import { api, type Session, type TurnRow, type ToolCallRow, type AnomalyRow } from "../../lib/api"
+import { computeSessionWarnings } from "../../lib/warnings"
+import { SessionWarningsList } from "../WarningsBanner"
 
 interface Props {
   sessionId: string
@@ -42,8 +44,11 @@ export function CostTab({ sessionId, session, ws, isMax }: Props) {
     return unsub
   }, [ws, sessionId, load])
 
+  const sessionWarnings = computeSessionWarnings(session, turns)
+
   return (
     <div className="p-6 space-y-6">
+      {sessionWarnings.length > 0 && <SessionWarningsList warnings={sessionWarnings} />}
       <CostSummaryCards session={session} turns={turns} isMax={isMax} />
       <CostChart turns={turns} isMax={isMax} />
       {turns.length > 2 && tools.length > 0 && (

@@ -205,6 +205,64 @@ fn get_daily_cost_summary(state: tauri::State<'_, AppState>) -> Result<Vec<Daily
     state.db.get_daily_cost_summary().map_err(|e| e.to_string())
 }
 
+#[derive(serde::Serialize, Clone)]
+struct ProviderStatus {
+    provider: String,
+    component: String,
+    status: String, // "operational" | "degraded_performance" | "partial_outage" | "major_outage" | "unknown"
+}
+
+#[tauri::command]
+async fn get_provider_status() -> Result<Vec<ProviderStatus>, String> {
+    // We only care about agent-related components, not ChatGPT/Sora/etc.
+    let sources = vec![
+        (
+            "https://status.anthropic.com/api/v2/summary.json",
+            vec!["Claude API", "Claude Code"],
+        ),
+        (
+            "https://status.openai.com/api/v2/summary.json",
+            vec!["Codex API", "CLI", "VS Code extension"],
+        ),
+    ];
+
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(5))
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let mut results = Vec::new();
+
+    for (url, component_names) in &sources {
+        match client.get(*url).send().await {
+            Ok(resp) => {
+                if let Ok(json) = resp.json::<serde_json::Value>().await {
+                    if let Some(components) = json.get("components").and_then(|v| v.as_array()) {
+                        for comp in components {
+                            let name = comp.get("name").and_then(|v| v.as_str()).unwrap_or("");
+                            if component_names.iter().any(|cn| name.contains(cn)) {
+                                let status = comp.get("status").and_then(|v| v.as_str()).unwrap_or("unknown");
+                                // Derive provider from the URL
+                                let provider = if url.contains("anthropic") { "Anthropic" } else { "OpenAI" };
+                                results.push(ProviderStatus {
+                                    provider: provider.to_string(),
+                                    component: name.to_string(),
+                                    status: status.to_string(),
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            Err(_) => {
+                // If we can't reach the status page, don't show anything rather than false alarms
+            }
+        }
+    }
+
+    Ok(results)
+}
+
 #[tauri::command]
 fn get_config() -> Result<config::AppConfig, String> {
     Ok(config::load_config())
@@ -267,6 +325,7 @@ pub fn run() {
             get_project_memory_files,
             get_context_window,
             get_daily_cost_summary,
+            get_provider_status,
             get_config,
             set_plan,
         ])

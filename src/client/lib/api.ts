@@ -144,6 +144,12 @@ export interface DailyCostRow {
   turn_count: number
 }
 
+export interface ProviderStatus {
+  provider: string
+  component: string
+  status: string  // "operational" | "degraded_performance" | "partial_outage" | "major_outage" | "unknown"
+}
+
 export const api = {
   getConfig: () => invoke<AppConfig>("get_config"),
   contextWindow: (sessionId: string) => invoke<number>("get_context_window", { sessionId }),
@@ -157,4 +163,5 @@ export const api = {
   compactions: (sessionId: string) => invoke<CompactionEventRow[]>("get_session_compactions", { sessionId }),
   memoryEvents: (sessionId: string) => invoke<MemoryEventRow[]>("get_session_memory_events", { sessionId }),
   dailyCostSummary: () => invoke<DailyCostRow[]>("get_daily_cost_summary"),
+  providerStatus: () => invoke<ProviderStatus[]>("get_provider_status"),
 }
