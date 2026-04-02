@@ -99,12 +99,13 @@ export function SettingsPage({ config, onConfigChange }: Props) {
         <h3 className="text-sm font-medium text-zinc-400 mb-3">Custom Model Pricing</h3>
         <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
           <p className="text-xs text-zinc-500 mb-3">
-            For third-party LLM providers with different rates, add custom pricing
-            to <span className="font-mono text-zinc-400">~/.agentdog/config.json</span>:
+            Using a third-party API (AWS Bedrock, Azure, custom proxy) with different rates?
+            Add custom pricing to <span className="font-mono text-zinc-400">~/.agentdog/config.json</span>.
+            Pricing is matched by <strong>model name</strong> from the session transcript — no per-agent config needed.
           </p>
           <pre className="text-[11px] text-zinc-400 bg-zinc-950 rounded p-3 overflow-x-auto">{`{
   "custom_pricing": {
-    "my-custom-model": {
+    "anthropic.claude-3-sonnet": {
       "input_per_million": 3.0,
       "output_per_million": 15.0,
       "cache_read_per_million": 0.3,
@@ -113,7 +114,9 @@ export function SettingsPage({ config, onConfigChange }: Props) {
   }
 }`}</pre>
           <p className="text-[10px] text-zinc-600 mt-2">
-            Keys match by prefix: <span className="font-mono">"claude-sonnet"</span> matches <span className="font-mono">"claude-sonnet-4-6"</span>.
+            Keys match by model name prefix from the transcript.
+            For example, if a session uses <span className="font-mono">"anthropic.claude-3-sonnet-20240229"</span>,
+            the key <span className="font-mono">"anthropic.claude-3-sonnet"</span> will match.
             Custom pricing takes priority over built-in prices.
           </p>
           {Object.keys(config.custom_pricing ?? {}).length > 0 && (
