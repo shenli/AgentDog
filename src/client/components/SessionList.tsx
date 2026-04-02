@@ -1,7 +1,7 @@
 import React from "react"
 import type { Session, AgentType } from "../lib/api"
 import { AGENT_LABELS } from "../lib/api"
-import { formatCost, formatTimeAgo, formatTokens } from "../lib/format"
+import { formatCost, formatTokens } from "../lib/format"
 
 interface Props {
   sessions: Session[]
@@ -40,7 +40,7 @@ export function SessionList({ sessions, selectedId, onSelect, isMax }: Props) {
         <div className="px-4 py-8 text-center text-zinc-600 text-sm">
           No sessions found.
           <br />
-          Start an AI coding agent to begin.
+          Start an AI agent to begin.
         </div>
       )}
     </div>
@@ -100,7 +100,7 @@ function SessionItem({
   return (
     <button
       onClick={onSelect}
-      className={`w-full text-left px-4 py-3 transition-colors
+      className={`w-full text-left px-4 py-2.5 transition-colors
         ${selected ? "bg-zinc-800/80" : "hover:bg-zinc-800/40"}`}
     >
       <div className="flex items-center gap-2">
@@ -122,19 +122,40 @@ function SessionItem({
           {primaryMetric}
         </span>
       </div>
-      {session.status !== "active" && (
-        <div className="mt-1 ml-4 text-[10px] text-zinc-500">
-          {formatTimeAgo(session.started_at)}
-        </div>
-      )}
+      <div className="mt-0.5 ml-4 text-[10px] text-zinc-600 flex gap-2">
+        {session.status === "active" ? (
+          <span className="text-green-500/70">{formatDuration(Date.now() - session.started_at)}</span>
+        ) : (
+          <span>{formatTimeAgo(session.started_at)}</span>
+        )}
+        {session.model && (
+          <span className="text-zinc-700 truncate">{session.model}</span>
+        )}
+      </div>
     </button>
   )
 }
 
 function shortProjectName(name: string): string {
-  // "~/work/my-api" -> "my-api"
   const parts = name.split("/")
   return parts[parts.length - 1] || name
+}
+
+function formatTimeAgo(ts: number): string {
+  const diff = Date.now() - ts
+  const mins = Math.floor(diff / 60_000)
+  if (mins < 1) return "just now"
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
+function formatDuration(ms: number): string {
+  const mins = Math.floor(ms / 60_000)
+  if (mins < 60) return `${mins}m`
+  const h = Math.floor(mins / 60)
+  return `${h}h ${mins % 60}m`
 }
 
 type HealthStatus = "ok" | "warning" | "danger"
