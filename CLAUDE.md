@@ -1,6 +1,6 @@
 # AgentDog
 
-Cost and context monitoring tool for local AI coding agents.
+Cost and context monitoring tool for local AI agents.
 
 ## Architecture
 

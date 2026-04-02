@@ -1,12 +1,12 @@
 # AgentDog
 
-Real-time monitoring dashboard for local AI coding agents.
+Real-time monitoring dashboard for local AI agents.
 
 AgentDog watches your Claude Code, OpenAI Codex CLI, and OpenClaw sessions as they run, giving you live visibility into token usage, costs, context window pressure, and tool call patterns — all from a single desktop app.
 
 ## Why
 
-AI coding agents burn through tokens with no visibility. You don't know how much a session costs until it's over. You can't see when context is about to overflow. You don't know which tool calls are eating your budget. AgentDog fixes this by reading agent transcript files directly from disk — no API keys, no config, no agent modifications needed.
+AI agents burn through tokens with no visibility. You don't know how much a session costs until it's over. You can't see when context is about to overflow. You don't know which tool calls are eating your budget. AgentDog fixes this by reading agent transcript files directly from disk — no API keys, no config, no agent modifications needed.
 
 ## Features
 

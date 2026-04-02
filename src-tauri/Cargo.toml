@@ -1,7 +1,7 @@
 [package]
 name = "agentdog"
 version = "0.1.0"
-description = "Cost and context debugger for Claude Code"
+description = "Cost and context monitoring for local AI agents"
 authors = ["Li Shen"]
 license = "MIT"
 edition = "2021"
