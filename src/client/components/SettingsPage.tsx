@@ -7,10 +7,10 @@ interface Props {
   onConfigChange: () => void
 }
 
-const AGENTS: { type: AgentType; description: string; path: string }[] = [
-  { type: "claude_code", description: "Monitors sessions from Claude Code CLI and IDE extensions", path: "~/.claude/projects/" },
-  { type: "codex_cli", description: "Monitors sessions from OpenAI Codex CLI", path: "~/.codex/sessions/" },
-  { type: "openclaw", description: "Monitors sessions from OpenClaw agents", path: "~/.openclaw/agents/" },
+const AGENTS: { type: AgentType; description: string; path: string; costSource: string }[] = [
+  { type: "claude_code", description: "Monitors sessions from Claude Code CLI and IDE extensions. Supports Anthropic and third-party API providers.", path: "~/.claude/projects/", costSource: "Estimated from model pricing table. May not match third-party provider rates." },
+  { type: "codex_cli", description: "Monitors sessions from OpenAI Codex CLI.", path: "~/.codex/sessions/", costSource: "Estimated from OpenAI pricing table." },
+  { type: "openclaw", description: "Monitors sessions from OpenClaw agents. Supports any LLM provider configured in OpenClaw.", path: "~/.openclaw/agents/", costSource: "Reported by OpenClaw per message — accurate for any provider." },
 ]
 
 export function SettingsPage({ config, onConfigChange }: Props) {
@@ -74,21 +74,20 @@ export function SettingsPage({ config, onConfigChange }: Props) {
                       </button>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-[10px] text-zinc-600">Data path</div>
-                    <div className="text-xs text-zinc-500 font-mono">{agent.path}</div>
+                  <div className="text-right text-xs">
+                    <div className="text-zinc-500 font-mono">{agent.path}</div>
                   </div>
                 </div>
-                {isSubscription && (
-                  <p className="text-[10px] text-zinc-600 mt-2">
-                    Cost shown as "API equivalent" for reference. No cost warnings.
+                <div className="mt-2 space-y-0.5">
+                  <p className="text-[10px] text-zinc-600">
+                    {isSubscription
+                      ? "Cost shown as estimate for reference. No cost warnings."
+                      : "Cost tracked as real spend. Warnings enabled for high cost and spikes."}
                   </p>
-                )}
-                {!isSubscription && (
-                  <p className="text-[10px] text-zinc-600 mt-2">
-                    Cost tracked as real spend. Warnings enabled for high cost and spikes.
+                  <p className="text-[10px] text-zinc-700">
+                    Pricing: {agent.costSource}
                   </p>
-                )}
+                </div>
               </div>
             )
           })}
