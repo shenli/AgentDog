@@ -8,7 +8,7 @@ import { MemoryTab } from "./components/memory/MemoryTab"
 import { useSessions } from "./hooks/use-sessions"
 import { useWebSocket } from "./hooks/use-websocket"
 import { useConfig } from "./hooks/use-config"
-import { AGENT_FEATURES, type AgentType } from "./lib/api"
+import { AGENT_FEATURES, isSessionMaxPlan, type AgentType } from "./lib/api"
 
 type TabId = "cost" | "context" | "memory"
 
@@ -18,7 +18,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState<TabId>("cost")
   const [showSettings, setShowSettings] = useState(false)
   const ws = useWebSocket()
-  const { config, setPlan, isMax } = useConfig()
+  const { config, setPlan } = useConfig()
 
   // Refresh sessions on WebSocket events
   useEffect(() => {
@@ -30,6 +30,11 @@ export function App() {
 
   const selected = sessions.find((s) => s.id === selectedId) ?? null
 
+  // Per-session: auto-detect token-first (Max) vs cost-first based on agent type
+  const isMax = selected
+    ? isSessionMaxPlan(selected, config.plan)
+    : config.plan === "max"
+
   // Determine which tabs are available for the selected agent
   const agentFeatures = selected
     ? AGENT_FEATURES[selected.agent_type as AgentType] ?? new Set()
@@ -37,7 +42,7 @@ export function App() {
 
   const tabs: { id: TabId; label: string; available: boolean }[] = [
     { id: "cost", label: isMax ? "Usage" : "Cost", available: true },
-    { id: "context", label: "Context", available: true }, // always show, but content adapts
+    { id: "context", label: "Context", available: true },
     { id: "memory", label: "Memory", available: agentFeatures.has("memory") },
   ]
 
@@ -72,21 +77,27 @@ export function App() {
             </button>
           </div>
 
-          {/* Plan selector — collapsed by default */}
+          {/* Settings panel — collapsed by default */}
           {showSettings && (
-            <div className="mt-2 flex gap-1">
-              {(["max", "pro", "api"] as const).map((plan) => (
-                <button
-                  key={plan}
-                  onClick={() => setPlan(plan)}
-                  className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors uppercase
-                    ${config.plan === plan
-                      ? "bg-blue-500/20 text-blue-400"
-                      : "text-zinc-600 hover:text-zinc-400"}`}
-                >
-                  {plan}
-                </button>
-              ))}
+            <div className="mt-2">
+              <div className="text-[10px] text-zinc-600 mb-1">Display mode override</div>
+              <div className="flex gap-1">
+                {(["auto", "max", "api"] as const).map((plan) => (
+                  <button
+                    key={plan}
+                    onClick={() => setPlan(plan)}
+                    className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors uppercase
+                      ${config.plan === plan
+                        ? "bg-blue-500/20 text-blue-400"
+                        : "text-zinc-600 hover:text-zinc-400"}`}
+                  >
+                    {plan === "auto" ? "Auto" : plan === "max" ? "Tokens" : "Cost"}
+                  </button>
+                ))}
+              </div>
+              <div className="text-[9px] text-zinc-700 mt-1">
+                Auto: Claude Code shows tokens, others show cost
+              </div>
             </div>
           )}
         </div>
@@ -146,7 +157,7 @@ export function App() {
             </div>
           </>
         ) : (
-          /* Overview dashboard — shown when no session is selected */
+          /* Overview or empty state */
           sessions.length > 0 ? (
             <div className="flex-1 overflow-auto">
               <OverviewDashboard

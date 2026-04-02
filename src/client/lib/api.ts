@@ -115,6 +115,18 @@ export const AGENT_LABELS: Record<AgentType, string> = {
   openclaw: "OpenClaw",
 }
 
+/** Whether a session should show token-first (Max plan) or cost-first views.
+ *  Claude Code defaults to Max (most power users). Codex/OpenClaw always cost. */
+export function isSessionMaxPlan(session: Session, globalOverride?: string): boolean {
+  if (globalOverride && globalOverride !== "auto") {
+    return globalOverride === "max"
+  }
+  // Claude Code: default to Max plan (token-first)
+  if (session.agent_type === "claude_code") return true
+  // Others: always cost-first (they're API-billed)
+  return false
+}
+
 export const AGENT_COLORS: Record<AgentType, string> = {
   claude_code: "bg-orange-500",
   codex_cli: "bg-emerald-500",
