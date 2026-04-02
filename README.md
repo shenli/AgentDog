@@ -6,6 +6,16 @@ Currently supports macOS. Built with [Tauri](https://tauri.app/).
 
 AgentDog is a lightweight menu bar app that watches your [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [OpenAI Codex](https://openai.com/index/codex/), and [OpenClaw](https://github.com/openclaw/openclaw) sessions as they run. It gives you live visibility into token usage, costs, context window health, and tool call patterns — by reading transcript files directly from disk. No API keys. No agent modifications. Just install and go.
 
+## Screenshots
+
+**Overview dashboard** — aggregate stats, agent breakdown, daily trends, provider status
+
+![Overview dashboard](docs/screenshots/overview.png)
+
+**Session detail** — per-turn token usage, warnings, cache efficiency, cost breakdown
+
+![Session detail](docs/screenshots/session-detail.png)
+
 ## Why AgentDog
 
 If you run AI agents regularly, you've hit these problems:
