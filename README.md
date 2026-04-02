@@ -2,17 +2,23 @@
 
 Real-time monitoring dashboard for local AI agents. macOS only.
 
-AgentDog is a lightweight desktop app that sits in your menu bar and watches your AI agent sessions as they run — Claude Code, OpenAI Codex CLI, and OpenClaw. It gives you live visibility into token usage, costs, context window health, and tool call patterns by reading transcript files directly from disk. No API keys needed. No agent modifications. Just install and it starts tracking.
+AgentDog is a lightweight desktop app that sits in your menu bar and watches your AI agent sessions as they run — Claude Code, OpenAI Codex, and OpenClaw. It gives you live visibility into token usage, costs, context window health, and tool call patterns by reading transcript files directly from disk. No API keys needed. No agent modifications. Just install and it starts tracking.
 
 ## About
 
-AgentDog was built out of frustration with flying blind while running AI agents. There's no easy way to know how much a session is costing, when context is about to overflow, or which tool calls are wasting tokens. Existing solutions require instrumenting your agent, setting up tracing infrastructure, or waiting for features that never ship (looking at you, OpenClaw OTEL PR #21290).
+If you run AI agents regularly, you've hit these problems:
 
-AgentDog takes a different approach: it reads the transcript files that agents already write to disk, parses them in real-time, and surfaces the insights in a clean dashboard. It's read-only, runs locally, and works with multiple agents simultaneously.
+- **You have no idea what anything costs.** A Claude Code session burns through tokens for hours and you only find out you've used 94% of your quota when the agent starts throttling. Codex runs a review and you have no clue how many tokens it consumed. OpenClaw routes to different providers and you can't tell which one is expensive.
+- **Context overflows silently.** Your agent stops working mid-task because the context window filled up. No warning, no graceful degradation — it just breaks. You don't know compaction happened, or that it failed.
+- **Prompt caching breaks with no signal.** A config change or a tool output in the wrong position invalidates the prompt cache, and your costs spike 5x. You don't see it until the bill arrives.
+- **Tool calls waste tokens invisibly.** A single `git log --stat` output eats 30% of your context window. Workspace files get injected every turn. Nobody tells you.
+- **There's no unified view.** You're running Claude Code, Codex, and OpenClaw across different projects. Each has its own (or no) monitoring. You can't see total spend, compare efficiency, or spot patterns across agents.
+
+AgentDog fixes all of this by reading the transcript files that agents already write to disk, parsing them in real-time, and surfacing everything in a clean dashboard. It's read-only, runs locally, and works with multiple agents simultaneously.
 
 ## Features
 
-- **Multi-agent support** — Claude Code, Codex CLI, OpenClaw in one dashboard
+- **Multi-agent support** — Claude Code, OpenAI Codex, OpenClaw in one dashboard
 - **Live session tracking** — 5-second polling picks up new turns as they happen
 - **Token & cost monitoring** — per-turn breakdown of input, output, cache read/write
 - **Context overflow prediction** — warns before compaction hits, estimates turns remaining
@@ -51,7 +57,7 @@ AgentDog reads transcript files that agents already write to disk:
 | Agent | What it reads |
 |-------|--------------|
 | Claude Code | `~/.claude/projects/*/sessions/*.jsonl` |
-| Codex CLI | `~/.codex/state_5.sqlite` + `~/.codex/sessions/**/*.jsonl` |
+| OpenAI Codex | `~/.codex/state_5.sqlite` + `~/.codex/sessions/**/*.jsonl` |
 | OpenClaw | `~/.openclaw/agents/*/sessions/*.jsonl` + `sessions.json` |
 
 No modifications to the agents. No API keys. No network calls (except optional status page checks). AgentDog is read-only — it never writes to agent directories.
