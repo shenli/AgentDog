@@ -55,21 +55,11 @@ export function WarningsBanner({ sessions, onSelectSession }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* Provider status — compact row of component statuses */}
-      {providers.length > 0 && (
-        <div className="flex items-center gap-4 flex-wrap px-1">
-          {providers.map((p) => {
-            const dot = STATUS_DOT[p.status] ?? STATUS_DOT.unknown
-            const label = STATUS_LABEL[p.status] ?? p.status
-            const isOk = p.status === "operational"
-            return (
-              <div key={`${p.provider}-${p.component}`} className="flex items-center gap-1.5 text-xs">
-                <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
-                <span className="text-zinc-500">{p.component}</span>
-                {!isOk && <span className="text-amber-400 font-medium">{label}</span>}
-              </div>
-            )
-          })}
+      {/* Provider status — only show details when there's an issue */}
+      {providers.length > 0 && issues.length === 0 && (
+        <div className="flex items-center gap-1.5 px-1 text-xs text-zinc-600">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+          All systems operational
         </div>
       )}
 
@@ -77,13 +67,18 @@ export function WarningsBanner({ sessions, onSelectSession }: Props) {
       {issues.length > 0 && (
         <div className="rounded-lg p-3 border bg-amber-500/10 border-amber-500/30">
           <div className="space-y-1">
-            {issues.map((p) => (
-              <div key={`${p.provider}-${p.component}`} className="flex items-center gap-2 text-sm text-amber-400">
-                <span className="font-bold text-xs">!</span>
-                <span className="font-medium">{p.component}</span>
-                <span className="text-amber-400/70">{STATUS_LABEL[p.status] ?? p.status}</span>
-              </div>
-            ))}
+            {issues.map((p) => {
+              const severity = p.status === "major_outage" ? "critical" : "warning"
+              const dot = STATUS_DOT[p.status] ?? STATUS_DOT.unknown
+              return (
+                <div key={`${p.provider}-${p.component}`} className="flex items-center gap-2 text-sm text-amber-400">
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />
+                  <span className="text-zinc-400">{p.provider}</span>
+                  <span className="font-medium">{p.component}</span>
+                  <span className="text-amber-400/70">— {STATUS_LABEL[p.status] ?? p.status}</span>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
