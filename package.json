@@ -1,0 +1,35 @@
+{
+  "name": "agentdog",
+  "version": "0.1.0",
+  "description": "Cost and context debugger for Claude Code",
+  "type": "module",
+  "scripts": {
+    "dev": "tauri dev",
+    "dev:client": "vite",
+    "build": "tauri build",
+    "build:client": "tsc && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/cli": "^2.10.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.4",
+    "@types/node": "^22.13.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "lucide-react": "^0.469.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.0",
+    "tailwindcss": "^4.1.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0",
+    "vite": "^6.2.0",
+    "vitest": "^3.1.1"
+  }
+}
