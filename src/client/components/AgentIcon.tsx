@@ -7,17 +7,25 @@ interface Props {
   className?: string
 }
 
+const AGENT_TITLES: Record<string, string> = {
+  claude_code: "Claude Code",
+  codex_cli: "Codex CLI",
+  openclaw: "OpenClaw",
+}
+
 /** Inline SVG icons for each agent type. */
 export function AgentIcon({ agent, size = 16, className = "" }: Props) {
+  const title = AGENT_TITLES[agent] ?? agent
+
   switch (agent) {
     case "claude_code":
-      return <ClaudeCodeIcon size={size} className={className} />
+      return <span title={title}><ClaudeCodeIcon size={size} className={className} /></span>
     case "codex_cli":
-      return <CodexIcon size={size} className={className} />
+      return <span title={title}><CodexIcon size={size} className={className} /></span>
     case "openclaw":
-      return <OpenClawIcon size={size} className={className} />
+      return <span title={title}><OpenClawIcon size={size} className={className} /></span>
     default:
-      return <DefaultIcon size={size} className={className} />
+      return <span title={title}><DefaultIcon size={size} className={className} /></span>
   }
 }
 
