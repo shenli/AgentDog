@@ -2,12 +2,12 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "AgentDog",
   "version": "0.1.0",
-  "identifier": "dev.agentdog.app",
+  "identifier": "dev.agentdog",
   "build": {
     "frontendDist": "../dist/client",
     "devUrl": "http://localhost:5173",
     "beforeDevCommand": "npm run dev:client",
-    "beforeBuildCommand": "npm run build"
+    "beforeBuildCommand": "npm run build:client"
   },
   "app": {
     "windows": [
