@@ -49,13 +49,17 @@ AgentDog fixes this. It reads the transcript files that agents already write to 
 - **Plan-aware billing** — auto-detects subscription vs. pay-per-token per agent
 - **Custom pricing** — bring your own per-token rates for third-party LLM providers
 
-## Requirements
+## Install
 
-- **macOS** (Windows and Linux not yet supported)
-- [Rust](https://rustup.rs/)
-- [Node.js](https://nodejs.org/) 18+
+### Download (recommended)
 
-## Getting Started
+Grab the latest DMG from [GitHub Releases](https://github.com/shenli/AgentDog/releases), open it, and drag AgentDog to your Applications folder. macOS Apple Silicon only for now.
+
+> **Note:** On first launch, macOS may block the app because it's unsigned. Go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**.
+
+### Build from source
+
+Requires [Rust](https://rustup.rs/) and [Node.js](https://nodejs.org/) 18+.
 
 ```bash
 git clone https://github.com/shenli/AgentDog.git
